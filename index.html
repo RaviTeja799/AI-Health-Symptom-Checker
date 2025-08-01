@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Symptom Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Enhanced markdown styling */
+        .prose {
+            max-width: none;
+            color: #374151;
+            line-height: 1.7;
+        }
+        
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            color: #1f2937;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .prose h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+        }
+        
+        .prose h2 {
+            font-size: 1.25rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.25rem;
+        }
+        
+        .prose h3 {
+            font-size: 1.125rem;
+            color: #2563eb;
+        }
+        
+        .prose h4 {
+            font-size: 1rem;
+            color: #4b5563;
+        }
+        
+        .prose p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .prose ul, .prose ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .prose ul {
+            list-style-type: disc;
+        }
+        
+        .prose ol {
+            list-style-type: decimal;
+        }
+        
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        .prose li::marker {
+            color: #3b82f6;
+        }
+        
+        .prose strong {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .prose em {
+            font-style: italic;
+            color: #4b5563;
+        }
+        
+        .prose code {
+            background-color: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-family: 'Courier New', monospace;
+            color: #dc2626;
+        }
+        
+        .prose pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .prose blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #4b5563;
+            font-style: italic;
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+        
+        .prose a {
+            color: #2563eb;
+            text-decoration: underline;
+            text-decoration-color: #93c5fd;
+            text-underline-offset: 2px;
+            transition: all 0.2s ease;
+        }
+        
+        .prose a:hover {
+            color: #1d4ed8;
+            text-decoration-color: #2563eb;
+        }
+        
+        .prose hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 2rem 0;
+        }
+        
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .prose th, .prose td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .prose th {
+            font-weight: 600;
+            color: #1f2937;
+            background-color: #f9fafb;
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Animations */
+        @keyframes slideInFromBottom {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-animation {
+            animation: slideInFromBottom 0.3s ease-out;
+        }
+        
+        /* Improved loading animation */
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            animation: bounce 1.4s ease-in-out infinite both;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Enhanced input styling */
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        /* Gradient background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+
+    <div class="flex flex-col h-screen">
+        <!-- Enhanced Header -->
+        <header class="bg-white/80 backdrop-blur-md text-slate-800 p-6 text-center shadow-lg border-b border-slate-200/50">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    🩺 AI Health Symptom Checker
+                </h1>
+                <p class="text-sm text-slate-600 mt-2 font-medium">Get personalized health insights powered by advanced AI</p>
+                <div class="flex items-center justify-center gap-2 mt-3 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        Online
+                    </span>
+                    <span>•</span>
+                    <span>Secure & Private</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="flex-1 flex justify-center p-4">
+            <div class="w-full max-w-4xl flex flex-col h-full">
+                <!-- Chat Messages -->
+                <main id="message-container" class="flex-1 overflow-y-auto space-y-6 py-6 custom-scrollbar">
+                    <!-- Welcome message will be inserted here -->
+                </main>
+
+                <!-- Enhanced Input Form -->
+                <footer class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-4 mt-4">
+                    <div id="chat-form" class="flex items-end gap-4">
+                        <div class="flex-1">
+                            <textarea 
+                                id="user-input" 
+                                placeholder="Describe your symptoms in detail... (e.g., headache, fever, duration, severity)"
+                                rows="1"
+                                class="w-full p-4 border border-slate-300 rounded-xl resize-none input-focus transition-all duration-200 text-sm"
+                                style="min-height: 56px; max-height: 120px;"
+                            ></textarea>
+                        </div>
+                        <button 
+                            type="submit" 
+                            id="submit-button" 
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-4 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009.894 15V4.106A1 1 0 0010.894 2.553z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+                        <span>💡 Be specific about symptoms, duration, and severity</span>
+                        <span class="flex items-center gap-1">
+                            <kbd class="px-2 py-1 bg-slate-100 rounded border text-xs">Shift</kbd>
+                            <span>+</span>
+                            <kbd class="px-2 py-1 bg-slate-100 rounded border text-xs">Enter</kbd>
+                            <span>to send</span>
+                        </span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const BACKEND_URL = 'https://health-agent-backend.bhraviteja799.workers.dev';
+        
+        // DOM elements
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const messageContainer = document.getElementById('message-container');
+        const submitButton = document.getElementById('submit-button');
+
+        // Configure marked.js for better markdown parsing
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
+
+        // Initialize the app
+        window.onload = () => {
+            addWelcomeMessage();
+            setupEventListeners();
+            userInput.focus();
+        };
+
+        function setupEventListeners() {
+            // Form submission
+            chatForm.addEventListener('click', (e) => {
+                if (e.target === submitButton || e.target.closest('#submit-button')) {
+                    e.preventDefault();
+                    handleSubmit();
+                }
+            });
+
+            // Enter key handling
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                } else if (e.key === 'Enter' && e.shiftKey) {
+                    // Allow line break
+                    return;
+                }
+            });
+
+            // Auto-resize textarea
+            userInput.addEventListener('input', autoResizeTextarea);
+        }
+
+        function autoResizeTextarea() {
+            userInput.style.height = 'auto';
+            userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+        }
+
+        async function handleSubmit() {
+            const messageText = userInput.value.trim();
+            if (!messageText) return;
+
+            addMessageToUI(messageText, 'user');
+            userInput.value = '';
+            userInput.style.height = '56px';
+            toggleLoading(true);
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: messageText }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server error (${response.status})`);
+                }
+
+                const data = await response.json();
+                addMessageToUI(data.reply, 'assistant');
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToUI(
+                    `**I apologize, but I'm having trouble connecting to the server right now.**\n\n` +
+                    `Please try again in a moment. If the problem persists, consider consulting with a healthcare professional directly.\n\n` +
+                    `*Error: ${error.message}*`, 
+                    'assistant', 
+                    'error'
+                );
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        function addWelcomeMessage() {
+            const welcomeMessage = `# Welcome to AI Health Symptom Checker! 👋
+
+I'm here to help you understand your symptoms and provide general health guidance. 
+
+## How I can help:
+- **Analyze symptoms** and suggest possible causes
+- **Provide health information** and general advice
+- **Recommend** when to seek medical attention
+- **Answer questions** about health conditions
+
+## Important reminders:
+> ⚠️ **This is not a substitute for professional medical advice.** Always consult with healthcare professionals for serious symptoms or concerns.
+
+**To get started, please describe your symptoms in detail:**
+- What symptoms are you experiencing?
+- How long have you had them?
+- How severe are they (mild, moderate, severe)?
+- Any other relevant information?
+
+*I'm ready when you are! Type your symptoms below.* ✨`;
+
+            addMessageToUI(welcomeMessage, 'assistant', 'welcome');
+        }
+
+        function addMessageToUI(text, sender, messageType = 'normal') {
+            // Remove loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) loadingIndicator.remove();
+
+            // Create message container
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} message-animation`;
+            
+            // Create message bubble
+            const contentDiv = document.createElement('div');
+            const baseClasses = 'max-w-3xl p-6 rounded-2xl shadow-sm border';
+            
+            if (sender === 'user') {
+                contentDiv.className = `${baseClasses} bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-200 rounded-br-md`;
+                contentDiv.innerHTML = `<div class="whitespace-pre-wrap font-medium">${escapeHtml(text)}</div>`;
+            } else {
+                let bgColor = 'bg-white border-slate-200';
+                let textColor = 'text-slate-800';
+                
+                if (messageType === 'error') {
+                    bgColor = 'bg-red-50 border-red-200';
+                    textColor = 'text-red-800';
+                } else if (messageType === 'welcome') {
+                    bgColor = 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200';
+                }
+                
+                contentDiv.className = `${baseClasses} ${bgColor} ${textColor} rounded-bl-md prose prose-sm max-w-none`;
+                
+                try {
+                    // Use marked.js for better markdown parsing
+                    const htmlContent = marked.parse(text);
+                    contentDiv.innerHTML = htmlContent;
+                } catch (error) {
+                    console.error('Markdown parsing error:', error);
+                    contentDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
+                }
+            }
+            
+            // Add timestamp
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = `text-xs text-slate-400 mt-2 ${sender === 'user' ? 'text-right' : 'text-left'}`;
+            timestampDiv.textContent = timestamp;
+            
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = sender === 'user' ? 'text-right' : 'text-left';
+            messageWrapper.appendChild(contentDiv);
+            messageWrapper.appendChild(timestampDiv);
+            
+            messageDiv.appendChild(messageWrapper);
+            messageContainer.appendChild(messageDiv);
+            
+            // Smooth scroll to bottom
+            requestAnimationFrame(() => {
+                messageContainer.scrollTo({
+                    top: messageContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        function toggleLoading(isLoading) {
+            userInput.disabled = isLoading;
+            submitButton.disabled = isLoading;
+            
+            if (isLoading) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading-indicator';
+                loadingDiv.className = 'flex justify-start message-animation';
+                loadingDiv.innerHTML = `
+                    <div class="max-w-3xl">
+                        <div class="bg-white border border-slate-200 rounded-2xl rounded-bl-md p-6 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="loading-dots">
+                                    <div class="loading-dot"></div>
+                                    <div class="loading-dot"></div>
+                                    <div class="loading-dot"></div>
+                                </div>
+                                <span class="text-slate-600 text-sm font-medium">Analyzing your symptoms...</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messageContainer.appendChild(loadingDiv);
+                messageContainer.scrollTo({
+                    top: messageContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle offline/online status
+        window.addEventListener('online', () => {
+            console.log('Connection restored');
+        });
+
+        window.addEventListener('offline', () => {
+            addMessageToUI(
+                '**Connection lost.** Please check your internet connection and try again.',
+                'assistant',
+                'error'
+            );
+        });
+    </script>
+
+</body>
+</html>
