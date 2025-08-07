@@ -13,203 +13,27 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        
-        /* Enhanced markdown styling */
-        .prose {
-            max-width: none;
-            color: #374151;
-            line-height: 1.7;
-        }
-        
-        .prose h1, .prose h2, .prose h3, .prose h4 {
-            color: #1f2937;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .prose h1 {
-            font-size: 1.5rem;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 0.5rem;
-        }
-        
-        .prose h2 {
-            font-size: 1.25rem;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 0.25rem;
-        }
-        
-        .prose h3 {
-            font-size: 1.125rem;
-            color: #2563eb;
-        }
-        
-        .prose h4 {
-            font-size: 1rem;
-            color: #4b5563;
-        }
-        
-        .prose p {
-            margin-bottom: 1rem;
-            line-height: 1.7;
-        }
-        
-        .prose ul, .prose ol {
-            margin: 1rem 0;
-            padding-left: 1.5rem;
-        }
-        
-        .prose ul {
-            list-style-type: disc;
-        }
-        
-        .prose ol {
-            list-style-type: decimal;
-        }
-        
-        .prose li {
-            margin-bottom: 0.5rem;
-            line-height: 1.6;
-        }
-        
-        .prose li::marker {
-            color: #3b82f6;
-        }
-        
-        .prose strong {
-            font-weight: 600;
-            color: #1f2937;
-        }
-        
-        .prose em {
-            font-style: italic;
-            color: #4b5563;
-        }
-        
-        .prose code {
-            background-color: #f3f4f6;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-family: 'Courier New', monospace;
-            color: #dc2626;
-        }
-        
-        .prose pre {
-            background-color: #1f2937;
-            color: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-        
-        .prose blockquote {
-            border-left: 4px solid #3b82f6;
-            padding-left: 1rem;
-            margin: 1rem 0;
-            color: #4b5563;
-            font-style: italic;
-            background-color: #f8fafc;
-            padding: 1rem;
-            border-radius: 0.375rem;
-        }
-        
-        .prose a {
-            color: #2563eb;
-            text-decoration: underline;
-            text-decoration-color: #93c5fd;
-            text-underline-offset: 2px;
-            transition: all 0.2s ease;
-        }
-        
-        .prose a:hover {
-            color: #1d4ed8;
-            text-decoration-color: #2563eb;
-        }
-        
-        /* Custom scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        
-        /* Animations */
-        @keyframes slideInFromBottom {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .message-animation {
-            animation: slideInFromBottom 0.3s ease-out;
-        }
-        
-        /* Loading animation */
-        .loading-dots {
-            display: inline-flex;
-            gap: 4px;
-        }
-        
-        .loading-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #3b82f6;
-            animation: bounce 1.4s ease-in-out infinite both;
-        }
-        
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        .loading-dot:nth-child(3) { animation-delay: 0s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% {
-                transform: scale(0);
-                opacity: 0.5;
-            }
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        /* Status indicators */
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        
-        .status-online { background-color: #10b981; }
-        .status-error { background-color: #ef4444; }
-        .status-warning { background-color: #f59e0b; }
-        
-        /* Enhanced input styling */
-        .input-focus:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
-        }
+        .prose { max-width: none; color: #374151; line-height: 1.7; }
+        .prose h1, .prose h2, .prose h3, .prose h4 { color: #1f2937; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .prose h2 { font-size: 1.25rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+        .prose h3 { font-size: 1.125rem; color: #2563eb; }
+        .prose p { margin-bottom: 1rem; }
+        .prose ul, .prose ol { margin: 1rem 0; padding-left: 1.5rem; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose strong { font-weight: 600; color: #1f2937; }
+        .prose blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; margin: 1rem 0; color: #4b5563; font-style: italic; background-color: #f8fafc; padding: 1rem; border-radius: 0.375rem; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        @keyframes slideInFromBottom { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .message-animation { animation: slideInFromBottom 0.3s ease-out; }
+        .loading-dots { display: inline-flex; gap: 4px; }
+        .loading-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #3b82f6; animation: bounce 1.4s ease-in-out infinite both; }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; } .loading-dot:nth-child(2) { animation-delay: -0.16s; } .loading-dot:nth-child(3) { animation-delay: 0s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-online { background-color: #10b981; } .status-error { background-color: #ef4444; } .status-warning { background-color: #f59e0b; }
+        .input-focus:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); border-color: #3b82f6; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
@@ -232,28 +56,15 @@
 
         <div class="flex-1 flex justify-center p-4">
             <div class="w-full max-w-4xl flex flex-col h-full">
-                <main id="message-container" class="flex-1 overflow-y-auto space-y-6 py-6 custom-scrollbar">
-                    </main>
+                <main id="message-container" class="flex-1 overflow-y-auto space-y-6 py-6 custom-scrollbar"></main>
 
                 <footer class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-4 mt-4">
                     <form id="chat-form" class="flex items-end gap-4">
                         <div class="flex-1">
-                            <textarea 
-                                id="user-input" 
-                                placeholder="Describe your symptoms in detail... (e.g., headache, fever, duration, severity)"
-                                rows="1"
-                                class="w-full p-4 border border-slate-300 rounded-xl resize-none input-focus transition-all duration-200 text-sm"
-                                style="min-height: 56px; max-height: 120px;"
-                            ></textarea>
+                            <textarea id="user-input" placeholder="Describe your symptoms in detail..." rows="1" class="w-full p-4 border border-slate-300 rounded-xl resize-none input-focus transition-all duration-200 text-sm" style="min-height: 56px; max-height: 120px;"></textarea>
                         </div>
-                        <button 
-                            type="submit" 
-                            id="submit-button" 
-                            class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-4 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009.894 15V4.106A1 1 0 0010.894 2.553z" />
-                            </svg>
+                        <button type="submit" id="submit-button" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-4 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009.894 15V4.106A1 1 0 0010.894 2.553z" /></svg>
                         </button>
                     </form>
                     <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
@@ -269,10 +80,8 @@
     </div>
 
     <script>
-        // Configuration
         const BACKEND_URL = 'https://health-agent-backend.bhraviteja799.workers.dev';
         
-        // DOM elements
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
         const messageContainer = document.getElementById('message-container');
@@ -280,15 +89,8 @@
         const connectionStatus = document.getElementById('connection-status');
         const connectionText = document.getElementById('connection-text');
 
-        // Configure marked.js for markdown rendering
-        marked.setOptions({
-            breaks: true,
-            gfm: true,
-            headerIds: false,
-            mangle: false
-        });
+        marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 
-        // Initialize the app
         window.onload = () => {
             checkBackendHealth();
             addWelcomeMessage();
@@ -297,37 +99,22 @@
         };
 
         function setupEventListeners() {
-            // Form submission
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleSubmit();
-            });
-
-            // Enter key handling (without Shift)
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                }
-            });
-
-            // Auto-resize textarea
+            chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSubmit(); });
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } });
             userInput.addEventListener('input', autoResizeTextarea);
         }
 
         async function checkBackendHealth() {
             updateConnectionStatus('warning', 'Checking...');
             try {
-                // A simple POST request to check if the endpoint is alive
+                // --- THIS PART IS UPDATED ---
+                // We now use a lightweight GET request for the health check.
                 const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: 'health check' }),
+                    method: 'GET', // Changed from POST to GET
                     signal: AbortSignal.timeout(10000)
                 });
                 
-                // Any successful response (even an error from the AI) means the service is online
-                if (response.ok || response.status < 500) {
+                if (response.ok) {
                      updateConnectionStatus('online', 'Connected');
                 } else {
                      updateConnectionStatus('error', 'Backend Error');
@@ -354,18 +141,15 @@
 
             addMessageToUI(messageText, 'user');
             userInput.value = '';
-            userInput.style.height = '56px'; // Reset height
+            userInput.style.height = '56px';
             toggleLoading(true);
 
             try {
                 const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
+                    method: 'POST', // Chat messages still use POST
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: messageText }),
-                    signal: AbortSignal.timeout(60000) // 60-second timeout
+                    signal: AbortSignal.timeout(60000)
                 });
 
                 if (!response.ok) {
@@ -377,25 +161,13 @@
 
                 if (data && data.reply) {
                     addMessageToUI(data.reply, 'assistant');
-                    updateConnectionStatus('online', 'Connected');
-                } else if (data && data.error) {
-                    throw new Error(`Backend error: ${data.error}`);
                 } else {
                     throw new Error('Invalid response format from backend.');
                 }
-
             } catch (error) {
                 console.error("Request failed:", error);
                 updateConnectionStatus('error', 'Request Failed');
-                
-                let errorMessage = `**🚨 Apologies, I was unable to get a response.**\n\n`;
-                if (error.name === 'TimeoutError') {
-                    errorMessage += "The request took too long to complete. The server might be busy. Please try again in a moment.";
-                } else {
-                    errorMessage += `There seems to be a connection issue. Please check your internet and try again.\n\n*Details: ${error.message}*`;
-                }
-                errorMessage += `\n\n**For any urgent health concerns, please consult a healthcare professional directly.**`
-
+                let errorMessage = `**🚨 Apologies, I was unable to get a response.**\n\nThere seems to be a connection issue. Please check your internet and try again.\n\n*Details: ${error.message}*`;
                 addMessageToUI(errorMessage, 'assistant', 'error');
             } finally {
                 toggleLoading(false);
@@ -403,19 +175,7 @@
         }
 
         function addWelcomeMessage() {
-            const welcomeMessage = `# Welcome to your AI Health Symptom Checker! 👋
-
-I am here to help you understand your symptoms using up-to-date information from the web. 
-
-## How I can help:
-- **Analyze symptoms** and suggest possible associated conditions.
-- **Provide general health information** and home care advice.
-- **Recommend** when it's important to consult a doctor.
-
-> ⚠️ **Disclaimer:** I am an AI assistant, not a medical professional. This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for any medical concerns.
-
-**To get started, please describe your symptoms in detail below.**`;
-
+            const welcomeMessage = `# Welcome to your AI Health Symptom Checker! 👋\n\nI am here to help you understand your symptoms using up-to-date information from the web.\n\n> ⚠️ **Disclaimer:** I am an AI assistant, not a medical professional. This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for any medical concerns.\n\n**To get started, please describe your symptoms in detail below.**`;
             addMessageToUI(welcomeMessage, 'assistant', 'welcome');
         }
 
@@ -434,49 +194,24 @@ I am here to help you understand your symptoms using up-to-date information from
                 contentDiv.innerHTML = `<div class="whitespace-pre-wrap font-medium">${escapeHtml(text)}</div>`;
             } else {
                 let bgColor = 'bg-white border-slate-200';
-                if (messageType === 'error') {
-                    bgColor = 'bg-red-50 border-red-200';
-                } else if (messageType === 'welcome') {
-                    bgColor = 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200';
-                }
-                
+                if (messageType === 'error') bgColor = 'bg-red-50 border-red-200';
+                else if (messageType === 'welcome') bgColor = 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200';
                 contentDiv.className = `${baseClasses} ${bgColor} rounded-bl-md prose prose-sm max-w-none`;
                 contentDiv.innerHTML = marked.parse(text);
             }
-            
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = sender === 'user' ? 'text-right' : 'text-left';
-            messageWrapper.appendChild(contentDiv);
-            
-            messageDiv.appendChild(messageWrapper);
+            messageDiv.appendChild(contentDiv);
             messageContainer.appendChild(messageDiv);
-            
-            requestAnimationFrame(() => {
-                messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' });
-            });
+            requestAnimationFrame(() => { messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' }); });
         }
 
         function toggleLoading(isLoading) {
             userInput.disabled = isLoading;
             submitButton.disabled = isLoading;
-            
             if (isLoading) {
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'loading-indicator';
                 loadingDiv.className = 'flex justify-start message-animation';
-                loadingDiv.innerHTML = `
-                    <div class="max-w-3xl">
-                        <div class="bg-white border border-slate-200 rounded-2xl rounded-bl-md p-6 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="loading-dots">
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                </div>
-                                <span class="text-slate-600 text-sm font-medium">Searching the web & analyzing...</span>
-                            </div>
-                        </div>
-                    </div>`;
+                loadingDiv.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl rounded-bl-md p-6 shadow-sm"><div class="flex items-center gap-3"><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div><span class="text-slate-600 text-sm font-medium">Searching the web & analyzing...</span></div></div>`;
                 messageContainer.appendChild(loadingDiv);
                 messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' });
             }
@@ -488,13 +223,7 @@ I am here to help you understand your symptoms using up-to-date information from
             return div.innerHTML;
         }
 
-        // Periodic health checks
-        setInterval(() => {
-            if (navigator.onLine) {
-                checkBackendHealth();
-            }
-        }, 60000); // Check every minute
+        setInterval(() => { if (navigator.onLine) checkBackendHealth(); }, 60000);
     </script>
-
 </body>
 </html>
