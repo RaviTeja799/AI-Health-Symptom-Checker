@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Health Symptom Checker - Debug Version</title>
+    <title>AI Health Symptom Checker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -192,16 +192,6 @@
             }
         }
         
-        /* Debug panel styling */
-        .debug-panel {
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-            color: #f9fafb;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
         /* Status indicators */
         .status-indicator {
             width: 8px;
@@ -225,7 +215,6 @@
 <body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
 
     <div class="flex flex-col h-screen">
-        <!-- Enhanced Header with Debug Info -->
         <header class="bg-white/80 backdrop-blur-md text-slate-800 p-6 text-center shadow-lg border-b border-slate-200/50">
             <div class="max-w-4xl mx-auto">
                 <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -237,37 +226,17 @@
                         <div id="connection-status" class="status-indicator status-warning"></div>
                         <span id="connection-text">Checking...</span>
                     </span>
-                    <span>•</span>
-                    <span>Debug Mode</span>
-                    <span>•</span>
-                    <button id="debug-toggle" class="px-2 py-1 bg-slate-200 rounded text-slate-700 hover:bg-slate-300 transition">
-                        Show Debug
-                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- Debug Panel -->
-        <div id="debug-panel" class="hidden debug-panel p-4 border-b border-slate-300">
-            <div class="max-w-4xl mx-auto">
-                <h3 class="text-sm font-semibold mb-2 text-yellow-400">🔧 Debug Information</h3>
-                <div id="debug-content" class="text-xs space-y-1">
-                    <!-- Debug info will be populated here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Chat Container -->
         <div class="flex-1 flex justify-center p-4">
             <div class="w-full max-w-4xl flex flex-col h-full">
-                <!-- Chat Messages -->
                 <main id="message-container" class="flex-1 overflow-y-auto space-y-6 py-6 custom-scrollbar">
-                    <!-- Messages will be inserted here -->
-                </main>
+                    </main>
 
-                <!-- Enhanced Input Form -->
                 <footer class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-4 mt-4">
-                    <div id="chat-form" class="flex items-end gap-4">
+                    <form id="chat-form" class="flex items-end gap-4">
                         <div class="flex-1">
                             <textarea 
                                 id="user-input" 
@@ -286,12 +255,10 @@
                                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009.894 15V4.106A1 1 0 0010.894 2.553z" />
                             </svg>
                         </button>
-                    </div>
+                    </form>
                     <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
                         <span>💡 Be specific about symptoms, duration, and severity</span>
                         <span class="flex items-center gap-1">
-                            <kbd class="px-2 py-1 bg-slate-100 rounded border text-xs">Shift</kbd>
-                            <span>+</span>
                             <kbd class="px-2 py-1 bg-slate-100 rounded border text-xs">Enter</kbd>
                             <span>to send</span>
                         </span>
@@ -304,44 +271,16 @@
     <script>
         // Configuration
         const BACKEND_URL = 'https://health-agent-backend.bhraviteja799.workers.dev';
-        const FALLBACK_URLS = [
-            'https://health-agent-backend.bhraviteja799.workers.dev'
-        ];
-        
-        // Debug system
-        const debugSystem = {
-            logs: [],
-            log(level, message, data = null) {
-                const timestamp = new Date().toISOString();
-                const logEntry = { timestamp, level, message, data };
-                this.logs.push(logEntry);
-                this.updateDebugPanel();
-                console.log(`[${level.toUpperCase()}] ${message}`, data || '');
-            },
-            updateDebugPanel() {
-                const debugContent = document.getElementById('debug-content');
-                const recentLogs = this.logs.slice(-10); // Show last 10 logs
-                debugContent.innerHTML = recentLogs.map(log => 
-                    `<div class="flex justify-between">
-                        <span class="text-gray-400">${log.timestamp.substr(11, 8)}</span>
-                        <span class="text-${log.level === 'error' ? 'red' : log.level === 'warn' ? 'yellow' : 'green'}-400">[${log.level.toUpperCase()}]</span>
-                        <span class="flex-1 ml-2">${log.message}</span>
-                    </div>`
-                ).join('');
-            }
-        };
         
         // DOM elements
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
         const messageContainer = document.getElementById('message-container');
         const submitButton = document.getElementById('submit-button');
-        const debugToggle = document.getElementById('debug-toggle');
-        const debugPanel = document.getElementById('debug-panel');
         const connectionStatus = document.getElementById('connection-status');
         const connectionText = document.getElementById('connection-text');
 
-        // Configure marked.js
+        // Configure marked.js for markdown rendering
         marked.setOptions({
             breaks: true,
             gfm: true,
@@ -351,7 +290,6 @@
 
         // Initialize the app
         window.onload = () => {
-            debugSystem.log('info', 'Application starting...');
             checkBackendHealth();
             addWelcomeMessage();
             setupEventListeners();
@@ -359,27 +297,17 @@
         };
 
         function setupEventListeners() {
-            // Debug toggle
-            debugToggle.addEventListener('click', () => {
-                debugPanel.classList.toggle('hidden');
-                debugToggle.textContent = debugPanel.classList.contains('hidden') ? 'Show Debug' : 'Hide Debug';
-            });
-
             // Form submission
-            chatForm.addEventListener('click', (e) => {
-                if (e.target === submitButton || e.target.closest('#submit-button')) {
-                    e.preventDefault();
-                    handleSubmit();
-                }
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSubmit();
             });
 
-            // Enter key handling
+            // Enter key handling (without Shift)
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSubmit();
-                } else if (e.key === 'Enter' && e.shiftKey) {
-                    return;
                 }
             });
 
@@ -388,48 +316,26 @@
         }
 
         async function checkBackendHealth() {
-            debugSystem.log('info', 'Checking backend health...');
             updateConnectionStatus('warning', 'Checking...');
-            
             try {
-                debugSystem.log('info', `Testing endpoint: ${BACKEND_URL}`);
-                
-                // Since your worker only accepts POST, we'll do a test POST request
+                // A simple POST request to check if the endpoint is alive
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: 'health check' }),
-                    signal: AbortSignal.timeout(10000) // 10 second timeout for health check
+                    signal: AbortSignal.timeout(10000)
                 });
-
-                debugSystem.log('info', `Health check response status: ${response.status}`, {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.reply || data.error) {
-                        updateConnectionStatus('online', 'Connected');
-                        debugSystem.log('success', `Backend healthy - received response`);
-                        return BACKEND_URL;
-                    }
-                } else if (response.status === 500) {
-                    // 500 errors might indicate backend issues but the endpoint is reachable
-                    updateConnectionStatus('warning', 'Backend Issues');
-                    debugSystem.log('warn', 'Backend reachable but returning 500 errors');
-                    return BACKEND_URL;
+                
+                // Any successful response (even an error from the AI) means the service is online
+                if (response.ok || response.status < 500) {
+                     updateConnectionStatus('online', 'Connected');
+                } else {
+                     updateConnectionStatus('error', 'Backend Error');
                 }
             } catch (error) {
-                debugSystem.log('error', `Health check failed for ${BACKEND_URL}`, error.message);
+                console.error("Health check failed:", error);
+                updateConnectionStatus('error', 'Offline');
             }
-            
-            updateConnectionStatus('error', 'Backend Offline');
-            debugSystem.log('error', 'Backend health check failed');
-            return null;
         }
 
         function updateConnectionStatus(status, text) {
@@ -446,71 +352,28 @@
             const messageText = userInput.value.trim();
             if (!messageText) return;
 
-            debugSystem.log('info', 'User message submitted', { message: messageText });
             addMessageToUI(messageText, 'user');
             userInput.value = '';
-            userInput.style.height = '56px';
+            userInput.style.height = '56px'; // Reset height
             toggleLoading(true);
 
             try {
-                debugSystem.log('info', `Sending request to: ${BACKEND_URL}`);
-                
-                const requestBody = JSON.stringify({ message: messageText });
-                debugSystem.log('info', 'Request payload', { body: requestBody });
-
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: requestBody,
-                    signal: AbortSignal.timeout(60000) // 60 second timeout for IBM Watson
-                });
-
-                debugSystem.log('info', `Response received`, {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-
-                const responseText = await response.text();
-                debugSystem.log('info', 'Raw response received', { 
-                    length: responseText.length,
-                    preview: responseText.substring(0, 200) 
+                    body: JSON.stringify({ message: messageText }),
+                    signal: AbortSignal.timeout(60000) // 60-second timeout
                 });
 
                 if (!response.ok) {
-                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                    
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        if (errorData.error) {
-                            errorMessage += `\n${errorData.error}`;
-                        }
-                    } catch (e) {
-                        if (responseText) {
-                            errorMessage += `\n${responseText}`;
-                        }
-                    }
-                    
-                    debugSystem.log('error', `HTTP ${response.status} error`, {
-                        status: response.status,
-                        statusText: response.statusText,
-                        body: responseText
-                    });
-                    
-                    throw new Error(errorMessage);
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
                 }
 
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                    debugSystem.log('success', 'Response parsed successfully', data);
-                } catch (parseError) {
-                    debugSystem.log('error', 'JSON parse error', { responseText, error: parseError.message });
-                    throw new Error(`Invalid JSON response: ${parseError.message}\nResponse: ${responseText}`);
-                }
+                const data = await response.json();
 
                 if (data && data.reply) {
                     addMessageToUI(data.reply, 'assistant');
@@ -518,51 +381,20 @@
                 } else if (data && data.error) {
                     throw new Error(`Backend error: ${data.error}`);
                 } else {
-                    throw new Error('Invalid response format - missing reply field');
+                    throw new Error('Invalid response format from backend.');
                 }
 
             } catch (error) {
-                debugSystem.log('error', `Request failed`, {
-                    error: error.message,
-                    stack: error.stack
-                });
-                
+                console.error("Request failed:", error);
                 updateConnectionStatus('error', 'Request Failed');
-
-                let errorMessage = `**🚨 Unable to get response from health service**\n\n`;
                 
+                let errorMessage = `**🚨 Apologies, I was unable to get a response.**\n\n`;
                 if (error.name === 'TimeoutError') {
-                    errorMessage += `**Timeout Error:**\n` +
-                        `The request took too long to complete. IBM Watson services can sometimes take longer to respond.\n\n` +
-                        `**What to try:**\n` +
-                        `• Wait a moment and try again\n` +
-                        `• Try with a shorter, simpler message\n` +
-                        `• Check your internet connection\n\n`;
-                } else if (error.message.includes('500')) {
-                    errorMessage += `**Server Error (500):**\n` +
-                        `The health service encountered an internal error. This could be:\n` +
-                        `• IBM Watson API issues\n` +
-                        `• Authentication problems\n` +
-                        `• Service temporarily unavailable\n\n` +
-                        `**What to try:**\n` +
-                        `• Wait a few minutes and try again\n` +
-                        `• Check if the service is under maintenance\n\n`;
-                } else if (error.message.includes('401') || error.message.includes('403')) {
-                    errorMessage += `**Authentication Error:**\n` +
-                        `There's an issue with the API credentials.\n` +
-                        `• The IBM Watson API key may be invalid or expired\n` +
-                        `• Service access permissions may need updating\n\n`;
+                    errorMessage += "The request took too long to complete. The server might be busy. Please try again in a moment.";
                 } else {
-                    errorMessage += `**Error Details:**\n` +
-                        `• ${error.message}\n\n` +
-                        `**Troubleshooting Steps:**\n` +
-                        `1. Check your internet connection\n` +
-                        `2. Try refreshing the page\n` +
-                        `3. Wait a moment and try again\n\n`;
+                    errorMessage += `There seems to be a connection issue. Please check your internet and try again.\n\n*Details: ${error.message}*`;
                 }
-                
-                errorMessage += `**For urgent health concerns, please consult a healthcare professional directly.**\n\n` +
-                    `*Technical details are available in the debug panel above.*`;
+                errorMessage += `\n\n**For any urgent health concerns, please consult a healthcare professional directly.**`
 
                 addMessageToUI(errorMessage, 'assistant', 'error');
             } finally {
@@ -571,43 +403,29 @@
         }
 
         function addWelcomeMessage() {
-            const welcomeMessage = `# Welcome to AI Health Symptom Checker! 👋
+            const welcomeMessage = `# Welcome to your AI Health Symptom Checker! 👋
 
-I'm here to help you understand your symptoms and provide general health guidance. 
+I am here to help you understand your symptoms using up-to-date information from the web. 
 
 ## How I can help:
-- **Analyze symptoms** and suggest possible causes
-- **Provide health information** and general advice
-- **Recommend** when to seek medical attention
-- **Answer questions** about health conditions
+- **Analyze symptoms** and suggest possible associated conditions.
+- **Provide general health information** and home care advice.
+- **Recommend** when it's important to consult a doctor.
 
-## Important reminders:
-> ⚠️ **This is not a substitute for professional medical advice.** Always consult with healthcare professionals for serious symptoms or concerns.
+> ⚠️ **Disclaimer:** I am an AI assistant, not a medical professional. This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for any medical concerns.
 
-**To get started, please describe your symptoms in detail:**
-- What symptoms are you experiencing?
-- How long have you had them?
-- How severe are they (mild, moderate, severe)?
-- Any other relevant information?
-
-*I'm ready when you are! Type your symptoms below.* ✨
-
----
-*🔧 Debug mode is enabled - check the debug panel if you encounter any issues.*`;
+**To get started, please describe your symptoms in detail below.**`;
 
             addMessageToUI(welcomeMessage, 'assistant', 'welcome');
         }
 
         function addMessageToUI(text, sender, messageType = 'normal') {
-            // Remove loading indicator
             const loadingIndicator = document.getElementById('loading-indicator');
             if (loadingIndicator) loadingIndicator.remove();
 
-            // Create message container
             const messageDiv = document.createElement('div');
             messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} message-animation`;
             
-            // Create message bubble
             const contentDiv = document.createElement('div');
             const baseClasses = 'max-w-3xl p-6 rounded-2xl shadow-sm border';
             
@@ -616,46 +434,25 @@ I'm here to help you understand your symptoms and provide general health guidanc
                 contentDiv.innerHTML = `<div class="whitespace-pre-wrap font-medium">${escapeHtml(text)}</div>`;
             } else {
                 let bgColor = 'bg-white border-slate-200';
-                let textColor = 'text-slate-800';
-                
                 if (messageType === 'error') {
                     bgColor = 'bg-red-50 border-red-200';
-                    textColor = 'text-red-800';
                 } else if (messageType === 'welcome') {
                     bgColor = 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200';
                 }
                 
-                contentDiv.className = `${baseClasses} ${bgColor} ${textColor} rounded-bl-md prose prose-sm max-w-none`;
-                
-                try {
-                    const htmlContent = marked.parse(text);
-                    contentDiv.innerHTML = htmlContent;
-                } catch (error) {
-                    debugSystem.log('error', 'Markdown parsing error', error.message);
-                    contentDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
-                }
+                contentDiv.className = `${baseClasses} ${bgColor} rounded-bl-md prose prose-sm max-w-none`;
+                contentDiv.innerHTML = marked.parse(text);
             }
-            
-            // Add timestamp
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const timestampDiv = document.createElement('div');
-            timestampDiv.className = `text-xs text-slate-400 mt-2 ${sender === 'user' ? 'text-right' : 'text-left'}`;
-            timestampDiv.textContent = timestamp;
             
             const messageWrapper = document.createElement('div');
             messageWrapper.className = sender === 'user' ? 'text-right' : 'text-left';
             messageWrapper.appendChild(contentDiv);
-            messageWrapper.appendChild(timestampDiv);
             
             messageDiv.appendChild(messageWrapper);
             messageContainer.appendChild(messageDiv);
             
-            // Smooth scroll to bottom
             requestAnimationFrame(() => {
-                messageContainer.scrollTo({
-                    top: messageContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
+                messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' });
             });
         }
 
@@ -676,16 +473,12 @@ I'm here to help you understand your symptoms and provide general health guidanc
                                     <div class="loading-dot"></div>
                                     <div class="loading-dot"></div>
                                 </div>
-                                <span class="text-slate-600 text-sm font-medium">Analyzing your symptoms...</span>
+                                <span class="text-slate-600 text-sm font-medium">Searching the web & analyzing...</span>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 messageContainer.appendChild(loadingDiv);
-                messageContainer.scrollTo({
-                    top: messageContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
+                messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' });
             }
         }
 
@@ -694,22 +487,6 @@ I'm here to help you understand your symptoms and provide general health guidanc
             div.textContent = text;
             return div.innerHTML;
         }
-
-        // Network status monitoring
-        window.addEventListener('online', () => {
-            debugSystem.log('info', 'Network connection restored');
-            checkBackendHealth();
-        });
-
-        window.addEventListener('offline', () => {
-            debugSystem.log('warn', 'Network connection lost');
-            updateConnectionStatus('error', 'Offline');
-            addMessageToUI(
-                '**🌐 Network Connection Lost**\n\nPlease check your internet connection and try again.',
-                'assistant',
-                'error'
-            );
-        });
 
         // Periodic health checks
         setInterval(() => {
