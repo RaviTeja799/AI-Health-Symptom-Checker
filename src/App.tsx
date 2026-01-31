@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import Markdown from "react-markdown";
-import { Send, Activity, CheckCircle2, RotateCw } from "lucide-react";
+import { Send, Activity, RefreshCcw, ShieldCheck, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const BACKEND_URL = 'https://health-agent-backend.bhraviteja799.workers.dev';
@@ -12,124 +13,89 @@ type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  type?: 'normal' | 'error' | 'welcome';
+  isError?: boolean;
 };
 
-type ConnectionStatus = 'checking' | 'online' | 'error' | 'offline';
+const DISCLAIMER_MESSAGE = `
+> ⚠️ **Disclaimer:** I am an AI assistant, not a medical professional. This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for any medical concerns.
+`;
+
+const STORAGE_KEY = 'medisense_chat_history';
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Failed to parse chat history", e);
+        }
+      }
+    }
+    return [{
+      id: 'welcome',
+      role: 'assistant',
+      content: `# Welcome to MediSense AI 👋\n\nI can help you understand your symptoms using broad medical knowledge.\n\n${DISCLAIMER_MESSAGE}\n\n**To get started, please describe your symptoms in detail.**`
+    }];
+  });
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Initial setup
   useEffect(() => {
-    checkBackendHealth();
-    addWelcomeMessage();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }, [messages]);
 
-    // Check health periodically
-    const interval = setInterval(() => {
-      if (navigator.onLine) checkBackendHealth();
-    }, 60000);
-
-    return () => clearInterval(interval);
+  useEffect(() => {
+    // Quick health check
+    fetch(BACKEND_URL, { method: 'GET', signal: AbortSignal.timeout(5000) }).catch(() => { });
   }, []);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
-
-  // Focus input on mount
-  useEffect(() => {
-    if (!isLoading) {
-      textareaRef.current?.focus();
-    }
-  }, [isLoading]);
-
-  const checkBackendHealth = async () => {
-    setConnectionStatus('checking');
-    try {
-      const response = await fetch(BACKEND_URL, {
-        method: 'GET',
-        signal: AbortSignal.timeout(10000)
-      });
-
-      if (response.ok) {
-        setConnectionStatus('online');
-      } else {
-        setConnectionStatus('error');
-      }
-    } catch (error) {
-      console.error("Health check failed:", error);
-      setConnectionStatus('offline');
-    }
-  };
-
-  const addWelcomeMessage = () => {
-    setMessages([{
-      id: 'welcome',
-      role: 'assistant',
-      content: `# Welcome to your AI Health Symptom Checker! 👋\n\nI am here to help you understand your symptoms using up-to-date information from the web.\n\n> ⚠️ **Disclaimer:** I am an AI assistant, not a medical professional. This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for any medical concerns.\n\n**To get started, please describe your symptoms in detail below.**`,
-      type: 'welcome'
-    }]);
-  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = input.trim();
+    const userText = input.trim();
     setInput("");
 
-    // Reset height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
-    // Add user message
-    const newMessages: Message[] = [
-      ...messages,
-      { id: Date.now().toString(), role: 'user', content: userMessage }
-    ];
-    setMessages(newMessages);
+    const newMessage: Message = { id: Date.now().toString(), role: 'user', content: userText };
+    setMessages(prev => [...prev, newMessage]);
     setIsLoading(true);
 
     try {
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ message: userText }),
         signal: AbortSignal.timeout(60000)
       });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorData}`);
-      }
+      if (!response.ok) throw new Error("Failed to fetch");
 
       const data = await response.json();
-
       if (data && data.reply) {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: 'assistant',
           content: data.reply
         }]);
-      } else {
-        throw new Error('Invalid response format from backend.');
       }
-    } catch (error: any) {
-      console.error("Request failed:", error);
-      setConnectionStatus('error');
+    } catch (error) {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `**🚨 Apologies, I was unable to get a response.**\n\nThere seems to be a connection issue. Please check your internet and try again.\n\n*Details: ${error.message}*`,
-        type: 'error'
+        content: "I'm having trouble connecting to the server right now. Please try again in a moment.",
+        isError: true
       }]);
     } finally {
       setIsLoading(false);
@@ -143,128 +109,172 @@ function App() {
     }
   };
 
-  const getStatusColor = (status: ConnectionStatus) => {
-    switch (status) {
-      case 'online': return 'bg-emerald-500';
-      case 'error': return 'bg-red-500';
-      case 'offline': return 'bg-red-500';
-      case 'checking': return 'bg-amber-500';
-      default: return 'bg-slate-400';
-    }
-  };
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+      <div className="p-6 flex items-center gap-3">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <Activity className="text-white w-5 h-5" />
+        </div>
+        <span className="font-bold text-lg text-slate-800 dark:text-slate-100">MediSense</span>
+      </div>
 
-  const getStatusText = (status: ConnectionStatus) => {
-    switch (status) {
-      case 'online': return 'Connected';
-      case 'error': return 'Backend Error';
-      case 'offline': return 'Offline';
-      case 'checking': return 'Checking...';
-      default: return 'Unknown';
-    }
-  };
+      <div className="flex-1 px-4 py-2">
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2 mb-6 bg-white dark:bg-slate-800 shadow-sm"
+          onClick={() => {
+            setMessages([{
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: `# New Session\n\nHow can I help you regarding your health today?\n\n${DISCLAIMER_MESSAGE}`
+            }]);
+          }}
+        >
+          <RefreshCcw className="w-4 h-4" />
+          New Chat
+        </Button>
+
+        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Settings</h3>
+        <Button variant="ghost" className="w-full justify-start gap-2 text-slate-600 dark:text-slate-400">
+          <ShieldCheck className="w-4 h-4" />
+          Privacy & Security
+        </Button>
+      </div>
+
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
+        <p className="text-xs text-slate-500 leading-relaxed">
+          <strong>Note:</strong> History is saved to your browser. Use "New Chat" to clear.
+        </p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 font-sans">
-      {/* Header */}
-      <header className="bg-background/80 backdrop-blur-md border-b sticky top-0 z-10 px-6 py-4 flex flex-col items-center justify-center shadow-sm">
-        <div className="flex items-center gap-2 mb-1">
-          <Activity className="w-6 h-6 text-primary" />
-          <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-            AI Health Symptom Checker
-          </h1>
-        </div>
-        <p className="text-xs md:text-sm text-muted-foreground font-medium hidden sm:block">
-          Personalized health insights powered by advanced AI
-        </p>
-        <div className="flex items-center gap-2 mt-2 text-xs font-medium bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-          <div className={cn("w-2 h-2 rounded-full animate-pulse", getStatusColor(connectionStatus))} />
-          <span className="text-muted-foreground">{getStatusText(connectionStatus)}</span>
-        </div>
-      </header>
+    <div className="flex h-screen bg-white dark:bg-slate-950 font-sans text-slate-900 overflow-hidden">
 
-      {/* Main Chat Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
-        <div className="max-w-3xl mx-auto space-y-6">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={cn(
-                "flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
-                msg.role === 'user' ? "justify-end" : "justify-start"
-              )}
-            >
-              <Card className={cn(
-                "max-w-[85%] md:max-w-[80%] p-4 shadow-sm border-0",
-                msg.role === 'user'
-                  ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-sm"
-                  : cn(
-                    "rounded-2xl rounded-tl-sm",
-                    msg.type === 'error' ? "bg-destructive/10 text-destructive-foreground border-destructive/20 border" :
-                      msg.type === 'welcome' ? "bg-blue-50/80 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 border" :
-                        "bg-card text-card-foreground border"
-                  )
-              )}>
-                <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed",
-                  msg.role === 'user' ? "text-primary-foreground" : "text-card-foreground"
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:block w-[280px] h-full shrink-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-full relative min-w-0">
+
+        {/* Mobile Header */}
+        <header className="md:hidden h-14 border-b flex items-center justify-between px-4 bg-white dark:bg-slate-950 shrink-0">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-blue-600" />
+            <span className="font-bold text-base">MediSense</span>
+          </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-[280px]">
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+        </header>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8 scroll-smooth">
+          <div className="max-w-3xl mx-auto space-y-6">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "flex gap-4",
+                  msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+                )}
+              >
+                <Avatar className={cn(
+                  "w-8 h-8 md:w-10 md:h-10 border shadow-sm mt-1",
+                  msg.role === 'user' ? "bg-blue-600 border-blue-600" : "bg-white border-slate-200"
                 )}>
-                  {msg.role === 'user' ? (
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                  ) : (
-                    <Markdown>{msg.content}</Markdown>
-                  )}
-                </div>
-              </Card>
-            </div>
-          ))}
+                  <AvatarImage src={msg.role === 'assistant' ? "https://ui.shadcn.com/avatars/02.png" : undefined} />
+                  <AvatarFallback className={msg.role === 'user' ? "bg-blue-600 text-white" : "bg-white text-slate-600"}>
+                    {msg.role === 'user' ? "You" : <Activity className="w-5 h-5" />}
+                  </AvatarFallback>
+                </Avatar>
 
-          {isLoading && (
-            <div className="flex justify-start w-full animate-in fade-in">
-              <Card className="bg-card border p-4 rounded-2xl rounded-tl-sm shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.32s]"></div>
-                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.16s]"></div>
-                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                <div className={cn(
+                  "flex flex-col gap-1 min-w-0 max-w-[85%] md:max-w-[80%]",
+                  msg.role === 'user' ? "items-end" : "items-start"
+                )}>
+                  {/* Name Label */}
+                  <span className="text-xs text-slate-400 font-medium px-1">
+                    {msg.role === 'user' ? 'You' : 'MediSense AI'}
+                  </span>
+
+                  <div className={cn(
+                    "px-5 py-3.5 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed break-words",
+                    msg.role === 'user'
+                      ? "bg-blue-600 text-white rounded-tr-sm"
+                      : cn(
+                        "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-tl-sm",
+                        msg.isError && "bg-red-50 border-red-200 text-red-900"
+                      )
+                  )}>
+                    {msg.role === 'user' ? (
+                      msg.content
+                    ) : (
+                      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                        <Markdown>{msg.content}</Markdown>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">Analyzing...</span>
                 </div>
-              </Card>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </main>
+              </div>
+            ))}
 
-      {/* Footer Input Area */}
-      <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 pb-6 md:pb-8">
-        <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSubmit} className="relative flex items-end gap-3 bg-muted/30 p-2 rounded-2xl border focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Describe your symptoms in detail..."
-              className="min-h-[50px] max-h-[150px] resize-none border-0 focus-visible:ring-0 bg-transparent text-base p-3 shadow-none flex-1"
-              rows={1}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isLoading || !input.trim()}
-              className="h-10 w-10 shrink-0 rounded-xl mb-1 mr-1 transition-all"
-            >
-              <Send className="w-5 h-5" />
-              <span className="sr-only">Send</span>
-            </Button>
-          </form>
-          <div className="text-center mt-3 text-xs text-muted-foreground flex items-center justify-center gap-4">
-            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Secure & Private</span>
-            <span className="hidden sm:inline">|</span>
-            <span className="hidden sm:flex items-center gap-1"><RotateCw className="w-3 h-3" /> Updated Daily</span>
+            {isLoading && (
+              <div className="flex gap-4">
+                <div className="w-8 h-8 md:w-10 md:h-10" /> {/* Spacer for alignment */}
+                <div className="flex items-center gap-1.5 p-4 bg-white border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} className="h-4" />
           </div>
         </div>
-      </footer>
+
+        {/* Input Area */}
+        <div className="p-4 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 md:pb-8">
+          <div className="max-w-3xl mx-auto">
+            <form onSubmit={handleSubmit} className="relative flex items-end gap-2 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900 transition-all">
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your health concerns here..."
+                className="min-h-[44px] max-h-[160px] resize-none border-0 focus-visible:ring-0 bg-transparent text-base py-2.5 px-3 shadow-none flex-1 placeholder:text-slate-500"
+                rows={1}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || !input.trim()}
+                className={cn(
+                  "h-10 w-10 shrink-0 rounded-lg transition-all",
+                  !input.trim() ? "bg-slate-200 text-slate-400 hover:bg-slate-200" : "bg-blue-600 hover:bg-blue-700 text-white"
+                )}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
+            <p className="text-center text-[10px] text-slate-400 mt-2">
+              Protected by SSL. Your session is anonymous.
+            </p>
+          </div>
+        </div>
+
+      </main>
     </div>
   );
 }
